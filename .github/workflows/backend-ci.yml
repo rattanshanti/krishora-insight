@@ -21,7 +21,6 @@ jobs:
 
       - name: Studio guards
         uses: rattanshanti/ci-templates/.github/actions/studio-guards@develop
-        continue-on-error: true
 
       - uses: astral-sh/setup-uv@v9
         with:
