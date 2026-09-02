@@ -1,37 +1,17 @@
-name: Backend CI
+name: Krishora Insight Backend CI
 
 on:
   workflow_dispatch:
   push:
     branches: [main, develop, 'feature/**', 'fix/**']
-    paths:
-      - '**'
   pull_request:
     branches: [main, develop]
 
 jobs:
   backend-ci:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: .
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Studio guards
-        uses: rattanshanti/ci-templates/.github/actions/studio-guards@develop
-
-      - uses: astral-sh/setup-uv@v9
-        with:
-          enable-cache: true
-          cache-dependency-glob: uv.lock
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version-file: .python-version
-
-      - run: uv sync --dev
-      - run: uv run ruff check .
-      - run: uv run ruff format --check .
-      - run: uv run pytest
+    uses: rattanshanti/ci-templates/.github/workflows/python-backend-ci.yml@develop
+    with:
+      working-directory: .
+      uv-sync-args: '--dev'
+      cache-dependency-glob: uv.lock
+    secrets: inherit
