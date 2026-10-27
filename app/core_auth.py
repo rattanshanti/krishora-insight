@@ -6,9 +6,10 @@ import uuid
 from dataclasses import dataclass
 from typing import Annotated, Any
 
+import jwt
 from fastapi import Depends, Header, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
+from jwt import InvalidTokenError
 
 from .config import settings
 from .membership import verify_org_membership
@@ -38,7 +39,7 @@ def decode_core_token(token: str) -> dict[str, Any]:
             algorithms=[settings.CORE_JWT_ALGORITHM],
             options={"verify_aud": False},
         )
-    except JWTError as exc:
+    except InvalidTokenError as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Invalid Core token: {exc}",

@@ -1,4 +1,6 @@
-from fastapi import Depends, FastAPI
+import uuid
+
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -73,7 +75,7 @@ async def create_farm(
 
 
 class MetricIn(BaseModel):
-    farm_id: str
+    farm_id: uuid.UUID
     name: str
     value: float
     unit: str | None = None
@@ -85,11 +87,20 @@ async def create_metric(
     principal: CorePrincipal = Depends(get_core_principal),
     db: AsyncSession = Depends(get_db),
 ):
-    import uuid
+    farm = await db.scalar(
+        select(Farm).where(
+            Farm.id == body.farm_id,
+            Farm.organization_id == principal.org_id,
+        )
+    )
+    if not farm:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Farm not found"
+        )
 
     row = Metric(
         organization_id=principal.org_id,
-        farm_id=uuid.UUID(body.farm_id),
+        farm_id=farm.id,
         name=body.name,
         value=body.value,
         unit=body.unit,
